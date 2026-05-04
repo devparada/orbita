@@ -1,18 +1,43 @@
-import { Canvas } from "@react-three/fiber";
+import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Stars } from "@react-three/drei";
-import { Suspense } from "react";
-import Earth from "./Earth";
+import { Suspense, useRef } from "react";
+import Earth from "./planets/Earth";
 import Meteorites from "./Meteorites";
+import Sun from "./planets/Sun";
+import Moon from "./planets/Moon";
 import LoadingScreen from "../ui/LoadingScreen";
 import { useStore } from "../../store/useStore";
 
 /**
+ * Componente SunOrbit
+ * Hace que el Sol gire alrededor de la Tierra (Vista Geocéntrica).
+ * Esto permite que la Tierra sea el centro [0,0,0] para los meteoritos,
+ * pero manteniendo el dinamismo de la órbita y el ciclo día/noche.
+ */
+function SunOrbit() {
+  const orbitRef = useRef();
+  
+  useFrame((state, delta) => {
+    if (orbitRef.current) {
+      orbitRef.current.rotation.y += delta * 0.1; // Velocidad de la órbita solar
+    }
+  });
+
+  return (
+    <group ref={orbitRef}>
+      {/* El Sol se sitúa a una distancia fija de la Tierra */}
+      <group position={[150, 0, 0]}>
+        <Sun />
+      </group>
+    </group>
+  );
+}
+
+/**
  * Componente Experience
- * Punto de entrada principal de la escena 3D.
- * Configura el Canvas de Three.js, la iluminación, la cámara y los componentes del universo.
+ * Mantiene la Tierra en el centro [0,0,0] como foco principal.
  */
 export default function Experience() {
-	// Suscripción al estado de carga de la API
 	const apiLoaded = useStore((state) => state.apiLoaded);
 
 	return (
@@ -26,40 +51,39 @@ export default function Experience() {
 				background: "#000",
 			}}
 		>
-			{/* Pantalla de carga superpuesta */}
 			<LoadingScreen apiLoaded={apiLoaded} />
 
 			<Canvas
-				camera={{ position: [0, 0, 25], fov: 45 }}
-				dpr={[1, 2]} // Optimización para pantallas Retina
+				camera={{ position: [0, 20, 40], fov: 45 }}
+				dpr={[1, 2]}
+        shadows
 			>
-				{/* Suspense gestiona la carga asíncrona de texturas y modelos */}
 				<Suspense fallback={null}>
 					<OrbitControls
 						enablePan={false}
 						minDistance={15}
-						maxDistance={100}
+						maxDistance={250}
 						makeDefault
 					/>
 
-					{/* Fondo de estrellas procedimentales */}
 					<Stars
-						radius={100}
-						depth={50}
-						count={5000}
+						radius={300}
+						depth={60}
+						count={8000}
 						factor={4}
 						saturation={0}
 						fade
 						speed={1}
 					/>
 
-					{/* Iluminación Cinematográfica */}
-					<directionalLight position={[10, 10, 10]} intensity={3} />
-					<ambientLight intensity={0.3} />
-					<pointLight position={[-10, -5, -10]} intensity={2} color="#2255ff" />
+					{/* El Sol orbita a la Tierra para mantener el foco en los NEOs */}
+					<SunOrbit />
+					
+					<ambientLight intensity={0.15} />
 
-					{/* Elementos de la Escena */}
+					{/* La Tierra, Luna y Meteoritos fijos en el centro del sistema de coordenadas */}
 					<Earth />
+					<Moon />
 					<Meteorites />
 				</Suspense>
 			</Canvas>

@@ -55,7 +55,7 @@ export default function Meteorites() {
 					<meshStandardMaterial
 						color="#00f3ff"
 						emissive="#00f3ff"
-						emissiveIntensity={2}
+						emissiveIntensity={5}
 					/>
 				</mesh>
 			))}
