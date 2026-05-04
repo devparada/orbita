@@ -1,0 +1,99 @@
+import { useRef, useState } from "react";
+import { useFrame, useThree } from "@react-three/fiber";
+import { useStore } from "../../../store/useStore";
+import * as THREE from "three";
+
+/**
+ * @component Meteorite
+ * @description Representación individual de un meteorito con lógica de interacción.
+ */
+export default function Meteorite({ state, onShoot }) {
+  const meshRef = useRef();
+  const materialRef = useRef();
+  const lineRef = useRef();
+  const [hovered, setHovered] = useState(false);
+  const { camera, size } = useThree();
+  const dragStart = useRef({ x: 0, y: 0 });
+  const currentDelta = useRef({ x: 0, y: 0 });
+  
+  const setIsDraggingMeteorite = useStore(state => state.setIsDraggingMeteorite);
+
+  useFrame(() => {
+    if (!state || !meshRef.current) return;
+
+    if (state.pocketed) {
+      meshRef.current.scale.lerp(new THREE.Vector3(0, 0, 0), 0.2);
+      if (meshRef.current.scale.x < 0.01) meshRef.current.visible = false;
+      return;
+    }
+
+    meshRef.current.position.set(state.pos.x, 0, state.pos.z);
+    
+    const isInteracting = hovered || state.isDragging;
+    const targetCol = isInteracting ? "#ffffff" : "#00f3ff";
+    materialRef.current.color.set(targetCol);
+    materialRef.current.emissive.set(targetCol);
+    materialRef.current.emissiveIntensity = isInteracting ? 5 : 2;
+
+    if (state.isDragging && lineRef.current) {
+      lineRef.current.visible = true;
+      const right = new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 0).setComponent(1, 0).normalize();
+      const up = new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 1).setComponent(1, 0).normalize();
+      const dir = new THREE.Vector3()
+        .addScaledVector(right, currentDelta.current.x / size.width)
+        .addScaledVector(up, currentDelta.current.y / size.height)
+        .normalize();
+      
+      const dist = Math.sqrt(currentDelta.current.x ** 2 + currentDelta.current.y ** 2);
+      const points = [
+        new THREE.Vector3(state.pos.x, 0, state.pos.z), 
+        new THREE.Vector3(state.pos.x, 0, state.pos.z).addScaledVector(dir, Math.min(dist * 0.15, 45))
+      ];
+      lineRef.current.geometry.setFromPoints(points);
+      lineRef.current.material.color.setHSL(0.5 - Math.min(dist / 300, 0.5), 1, 0.5);
+    } else if (lineRef.current) {
+      lineRef.current.visible = false;
+    }
+  });
+
+  return (
+    <group>
+      <mesh ref={meshRef}
+        onPointerOver={() => !state.pocketed && setHovered(true)}
+        onPointerOut={() => setHovered(false)}
+        onPointerDown={(e) => {
+          if (state.pocketed) return;
+          e.stopPropagation();
+          e.target.setPointerCapture(e.pointerId);
+          state.isDragging = true;
+          dragStart.current = { x: e.clientX, y: e.clientY };
+          setIsDraggingMeteorite(true);
+        }}
+        onPointerMove={(e) => {
+          if (state.isDragging) {
+            currentDelta.current = { x: e.clientX - dragStart.current.x, y: dragStart.current.y - e.clientY };
+          }
+        }}
+        onPointerUp={(e) => {
+          if (state.isDragging) {
+            e.stopPropagation();
+            e.target.releasePointerCapture(e.pointerId);
+            state.isDragging = false;
+            setIsDraggingMeteorite(false);
+            onShoot(currentDelta.current.x, currentDelta.current.y);
+          }
+        }}
+      >
+        <sphereGeometry args={[state.visualRadius, 24, 24]} />
+        <meshStandardMaterial ref={materialRef} roughness={0.2} metalness={0.8} />
+        <mesh visible={false}>
+          <sphereGeometry args={[state.visualRadius + 3, 8, 8]} />
+        </mesh>
+      </mesh>
+      <line ref={lineRef}>
+        <bufferGeometry />
+        <lineBasicMaterial transparent opacity={0.6} linewidth={2} />
+      </line>
+    </group>
+  );
+}

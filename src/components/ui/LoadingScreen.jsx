@@ -3,18 +3,17 @@ import { useProgress } from "@react-three/drei";
 import "./LoadingScreen.css";
 
 /**
- * Componente de Pantalla de Carga (Loading Screen)
- * Gestiona la visualización del progreso de carga de activos 3D y datos de la API.
+ * @component LoadingScreen
+ * @description Pantalla de carga técnica con telemetría de activos y sincronización de API.
+ * Proporciona una transición fluida entre el estado de carga y el inicio del juego.
  */
 export default function LoadingScreen({ apiLoaded }) {
-  // Hook de R3F para obtener el progreso de carga de texturas/modelos
   const { progress: assetsProgress } = useProgress();
-  
   const [dots, setDots] = useState("");
   const [isFinished, setIsFinished] = useState(false);
   const [smoothProgress, setSmoothProgress] = useState(0);
 
-  // 1. Animación de puntos suspensivos para el texto de carga
+  // 1. Efecto de terminal: Puntos suspensivos animados
   useEffect(() => {
     if (isFinished) return;
     const interval = setInterval(() => {
@@ -23,69 +22,74 @@ export default function LoadingScreen({ apiLoaded }) {
     return () => clearInterval(interval);
   }, [isFinished]);
 
-  // 2. Cálculo de porcentaje "realista" combinado
-  // Consideramos que los activos 3D son el 70% de la carga y la API el 30%
+  // 2. Telemetría combinada: 70% Activos 3D, 30% Datos NASA
   const targetProgress = useMemo(() => {
     const apiWeight = apiLoaded ? 30 : 0;
     const assetsWeight = (assetsProgress / 100) * 70;
     return Math.round(assetsWeight + apiWeight);
   }, [assetsProgress, apiLoaded]);
 
-  // 3. Suavizado del progreso para que no pegue saltos bruscos
+  // 3. Interpolación suave de la barra de progreso
   useEffect(() => {
     if (smoothProgress < targetProgress) {
-      const timeout = setTimeout(() => {
+      const timer = setTimeout(() => {
         setSmoothProgress((prev) => Math.min(prev + 1, targetProgress));
-      }, 10); // Incremento suave cada 10ms
-      return () => clearTimeout(timeout);
+      }, 15);
+      return () => clearTimeout(timer);
     }
   }, [smoothProgress, targetProgress]);
 
-  // 4. Lógica de finalización
-  // Se considera terminado cuando ambos han cargado y la barra visual llega al 100%
+  // 4. Lógica de transición final
   const allLoaded = assetsProgress === 100 && apiLoaded && smoothProgress >= 100;
 
   useEffect(() => {
     if (allLoaded) {
-      // Retraso de cortesía para que el usuario vea el estado final "SISTEMA LISTO"
-      const timer = setTimeout(() => setIsFinished(true), 800);
+      // Delay táctico para mostrar el mensaje de éxito
+      const timer = setTimeout(() => setIsFinished(true), 1200);
       return () => clearTimeout(timer);
     }
   }, [allLoaded]);
 
   return (
-    <div className={`loading-screen ${isFinished ? "fade-out finished" : ""}`}>
+    <div
+      className={`loading-screen ${isFinished ? "fade-out finished" : ""}`}
+      style={{ pointerEvents: isFinished ? 'none' : 'auto' }}
+    >
       <div className="loading-content">
-        {/* Título dinámico */}
-        <div className="text-container">
-          <h2 className="loading-text">
-            {isFinished ? "SISTEMA LISTO" : `INICIALIZANDO SISTEMA${dots}`}
-          </h2>
-        </div>
-        
-        {/* Barra de progreso visual */}
-        <div className="progress-container">
-          <div 
-            className="progress-bar" 
-            style={{ width: `${smoothProgress}%` }}
-          ></div>
+        <div className="loading-brand">
+          <span className="brand-accent">SISTEMA</span>
+          <h1 className="brand-title">ÓRBITA</h1>
         </div>
 
-        {/* Detalles técnicos inferiores */}
+        <div className="status-box">
+          <h2 className="loading-text">
+            {isFinished ? "NÚCLEO OPERATIVO" : `INICIALIZANDO ESCÁNER${dots}`}
+          </h2>
+
+          <div className="progress-container">
+            <div className="progress-bar" style={{ width: `${smoothProgress}%` }}>
+              <div className="bar-glow"></div>
+            </div>
+          </div>
+        </div>
+
         <div className="loading-details">
           <div className="detail-item">
-            <span className="detail-label">NIVEL DE CARGA</span>
-            <span>{smoothProgress}%</span>
+            <span className="detail-label">CONEXIÓN</span>
+            <span className="detail-value">{smoothProgress}%</span>
           </div>
           <div className="detail-item">
-            <span className="detail-label">NÚCLEO NASA</span>
-            <span>{apiLoaded ? "SINCRO OK" : "CONECTANDO"}</span>
+            <span className="detail-label">NODO NASA</span>
+            <span className={`detail-value ${apiLoaded ? "status-ok" : "status-wait"}`}>
+              {apiLoaded ? "SINCRO_OK" : "BUSCANDO..."}
+            </span>
           </div>
         </div>
       </div>
 
-      {/* Efecto visual de barrido (scanline) */}
+      {/* Efecto de interferencia CRT */}
       <div className="scanline"></div>
+      <div className="noise-overlay"></div>
     </div>
   );
 }

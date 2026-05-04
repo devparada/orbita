@@ -1,6 +1,4 @@
 ---
-import HUD from "../components/ui/HUD.astro";
-
 interface Props {
 	title?: string;
 }
@@ -18,7 +16,6 @@ const { title = "ÓRBITA | NASA NEO Visualizer" } = Astro.props;
     <title>{title}</title>
   </head>
   <body>
-    <HUD />
     <main>
       <slot />
     </main>

@@ -18,11 +18,12 @@ export default function Sun() {
     <group>
       {/* El Sol visual */}
       <mesh ref={sunRef}>
-        <sphereGeometry args={[15, 32, 32]} />
+        <sphereGeometry args={[12, 32, 32]} />
         <meshStandardMaterial
-          emissive="#ffcc00"
-          emissiveIntensity={2}
-          color="#ffaa00"
+          emissive="#ff8800"
+          emissiveIntensity={10}
+          color="#ffcc00"
+          roughness={0}
         />
       </mesh>
 

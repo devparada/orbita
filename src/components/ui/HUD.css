@@ -1,0 +1,214 @@
+.hud-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  font-family: 'Space Mono', monospace;
+  color: #00f3ff;
+  z-index: 1000;
+  text-transform: uppercase;
+}
+
+/* HEADER ELEMENTS */
+.hud-header-wrapper {
+  position: absolute;
+  top: 25px;
+  left: 30px;
+  right: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-bg-gradient {
+  position: absolute;
+  top: -25px;
+  left: -30px;
+  width: calc(100% + 60px);
+  height: 120px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0) 100%);
+  z-index: -1;
+  pointer-events: none;
+}
+
+.hud-top-left {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+
+.brand-text {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 10px;
+  text-shadow: 0 0 15px rgba(0, 243, 255, 0.6);
+}
+
+.divider-vertical {
+  width: 2px;
+  height: 35px;
+  background: rgba(0, 243, 255, 0.2);
+}
+
+.game-metrics {
+  display: flex;
+  gap: 40px;
+}
+
+.metric-box {
+  display: flex;
+  flex-direction: column;
+  min-width: 80px;
+}
+
+.m-label {
+  font-size: 10px;
+  opacity: 0.5;
+  letter-spacing: 2px;
+}
+
+.m-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 0 10px rgba(0, 243, 255, 0.8);
+}
+
+/* TOP RIGHT */
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+}
+
+.status-value-green {
+  color: #00ff64;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-shadow: 0 0 15px rgba(0, 255, 100, 0.6);
+}
+
+.status-value-orange {
+  color: #ffaa00;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-shadow: 0 0 15px rgba(255, 170, 0, 0.6);
+}
+
+/* BOTTOM BAR (FOOTER) */
+.hud-bottom-bar {
+  position: absolute;
+  bottom: 25px;
+  left: 30px;
+  right: 30px;
+}
+
+.footer-bg-gradient {
+  position: absolute;
+  bottom: -25px;
+  left: -30px;
+  width: calc(100% + 60px);
+  height: 100px;
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0) 100%);
+  z-index: -1;
+  pointer-events: none;
+}
+
+.horizontal-divider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg,
+      rgba(0, 243, 255, 0) 0%,
+      rgba(0, 243, 255, 0.4) 10%,
+      rgba(0, 243, 255, 0.4) 90%,
+      rgba(0, 243, 255, 0) 100%);
+  margin-bottom: 10px;
+}
+
+.bottom-layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  align-items: flex-end;
+  width: 100%;
+}
+
+.bottom-left {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  align-items: flex-start;
+}
+
+.bottom-right {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.api-info {
+  font-size: 9px;
+  opacity: 0.4;
+  letter-spacing: 1px;
+}
+
+.controls-info {
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: #00f3ff;
+  white-space: nowrap;
+  opacity: 0.8;
+  text-shadow: 0 0 10px rgba(0, 243, 255, 0.4);
+}
+
+.scanner-btn {
+  background: rgba(0, 243, 255, 0.1);
+  border: 1px solid rgba(0, 243, 255, 0.3);
+  color: #00f3ff;
+  padding: 8px 15px;
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  pointer-events: auto !important;
+}
+
+.scanner-btn:hover {
+  background: rgba(0, 243, 255, 0.2);
+  border-color: #00f3ff;
+  box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
+}
+
+.scanner-btn.disabled {
+  background: rgba(255, 170, 0, 0.05);
+  border-color: rgba(255, 170, 0, 0.2);
+  color: #ffaa00;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* CRT OVERLAY */
+.crt-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.05) 50%),
+    linear-gradient(90deg, rgba(255, 0, 0, 0.01), rgba(0, 255, 0, 0.005), rgba(0, 0, 255, 0.01));
+  background-size: 100% 4px, 4px 100%;
+  pointer-events: none;
+  opacity: 0.15;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .hud-header-wrapper { flex-direction: column; gap: 10px; align-items: flex-start; }
+  .bottom-layout { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+  .bottom-left { align-items: center; }
+}

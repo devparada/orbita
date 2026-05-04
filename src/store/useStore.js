@@ -1,19 +1,34 @@
 import { create } from "zustand";
+import * as THREE from "three";
 
 /**
  * Store global de la aplicación utilizando Zustand.
- * Centraliza el estado de carga y los datos de los meteoritos obtenidos de la NASA.
+ * Ahora incluye lógica de juego para el billar espacial.
  */
 export const useStore = create((set) => ({
-  // Estado de sincronización con la API
   apiLoaded: false,
-  
-  // Setter manual para el estado de la API
   setApiLoaded: (val) => set({ apiLoaded: val }),
-  
-  // Lista de meteoritos formateados para Three.js
+
   meteoritos: [],
-  
-  // Función para actualizar los meteoritos y marcar la carga como completada
   setMeteoritos: (data) => set({ meteoritos: data, apiLoaded: true }),
+
+  isDraggingMeteorite: false,
+  setIsDraggingMeteorite: (val) => set({ isDraggingMeteorite: val }),
+
+  // POSICIONES PLANETARIAS
+  sunWorldPos: new THREE.Vector3(150, 0, 0),
+  moonWorldPos: new THREE.Vector3(20, 0, 0),
+  setSunWorldPos: (pos) => set({ sunWorldPos: pos }),
+  setMoonWorldPos: (pos) => set({ moonWorldPos: pos }),
+
+  // LÓGICA DE JUEGO
+  score: 0,
+  meteoritosRestantes: 0,
+  addScore: (pts) => set((state) => {
+    const newScore = state.score + Number(pts);
+    const newRemaining = Math.max(0, state.meteoritosRestantes - 1);
+    return { score: newScore, meteoritosRestantes: newRemaining };
+  }),
+  resetGame: () => set({ score: 0, meteoritos: [] }),
+  setInitialCount: (count) => set({ meteoritosRestantes: count }),
 }));
