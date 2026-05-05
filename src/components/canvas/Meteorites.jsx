@@ -36,7 +36,7 @@ export default function Meteorites() {
       const formatted = data.slice(0, 20).map((m, i) => {
         const angle = Math.random() * Math.PI * 2;
         const dist = 40 + Math.random() * 90;
-        const rad = Math.max(0.2, (m.diameterMax / 3000) * 15);
+        const rad = Math.max(0.4, Math.min(3, (m.diameterMax / 1000) * 1.5));
         
         physicsStates.current[i] = {
           id: m.id,

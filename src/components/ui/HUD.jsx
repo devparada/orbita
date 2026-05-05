@@ -30,7 +30,7 @@ export default function HUD() {
   };
 
   return (
-    <div className="hud-container" key={score}>
+    <div className="hud-container">
       <div className="hud-header-wrapper">
         <div className="header-bg-gradient"></div>
         <div className="hud-top-left">
