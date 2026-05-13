@@ -4,8 +4,9 @@ import "./HUD.css";
 
 /**
  * @component HUD
- * @description Interfaz de usuario reactiva (Heads-Up Display).
- * Ahora incluye un sistema de cooldown para la recarga del escáner.
+ * @description Interfaz de usuario reactiva (Heads-Up Display) superpuesta sobre el canvas 3D.
+ * Muestra el estado actual del juego: puntuación, meteoritos restantes y la tabla de valores de puntuación.
+ * También gestiona el sistema de "Recarga de escáner" (Reset) con un cooldown de 30 segundos para evitar spam.
  */
 export default function HUD() {
   const score = useStore(state => state.score);
@@ -54,6 +55,29 @@ export default function HUD() {
             <span className={cooldown > 0 ? "status-value-orange" : "status-value-green"}>
               SISTEMA: {cooldown > 0 ? `RECALIBRANDO [${cooldown}S]` : "ONLINE"}
             </span>
+          </div>
+          <div className="score-legend">
+            <div className="legend-title">PUNTUACIÓN</div>
+            <div className="legend-item">
+              <span className="legend-icon">🌙</span>
+              <span className="legend-name">LUNA</span>
+              <span className="legend-pts pts-pos">+50</span>
+            </div>
+            <div className="legend-item">
+              <span className="legend-icon">☀️</span>
+              <span className="legend-name">SOL</span>
+              <span className="legend-pts pts-pos">+150</span>
+            </div>
+            <div className="legend-item">
+              <span className="legend-icon">🌍</span>
+              <span className="legend-name">TIERRA</span>
+              <span className="legend-pts pts-neg">-20</span>
+            </div>
+            <div className="legend-item">
+              <span className="legend-icon">🕳️</span>
+              <span className="legend-name">AG. NEGRO</span>
+              <span className="legend-pts pts-neg">-30</span>
+            </div>
           </div>
         </div>
       </div>

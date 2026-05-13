@@ -11,7 +11,7 @@ import Sun from "../planets/Sun";
 export default function SunOrbit() {
   const orbitRef = useRef();
   const setSunWorldPos = useStore((state) => state.setSunWorldPos);
-  const SUN_DISTANCE = 250;
+  const SUN_DISTANCE = 150;
 
   useFrame((_state, delta) => {
     if (orbitRef.current) {

@@ -1,18 +1,25 @@
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, Stars, PerspectiveCamera, Text } from "@react-three/drei";
+import { OrbitControls, Stars, PerspectiveCamera } from "@react-three/drei";
 import { useStore } from "../../store/useStore";
 
 import HUD from "../ui/HUD";
 import LoadingScreen from "../ui/LoadingScreen";
+import RulesScreen from "../ui/RulesScreen";
 
 import Earth from "./planets/Earth";
 import Moon from "./planets/Moon";
 import Meteorites from "./Meteorites";
+import BlackHoles from "./BlackHoles";
 import SunOrbit from "./logic/SunOrbit";
 
 /**
  * @component Experience
  * @description Orquestador principal de la escena 3D de ÓRBITA.
+ * Aquí se inicializa el Canvas de React Three Fiber y se inyectan todos los elementos del juego:
+ * - Luces globales (hemisferio) y cámara principal.
+ * - Astros celestes (Tierra, Luna, Sol).
+ * - Entidades dinámicas (Meteoritos y Agujeros Negros).
+ * - Interfaz gráfica HTML superpuesta (HUD, LoadingScreen, RulesScreen).
  */
 export default function Experience() {
   const apiLoaded = useStore((state) => state.apiLoaded);
@@ -22,7 +29,10 @@ export default function Experience() {
       {/* 1. PANTALLA DE CARGA */}
       <LoadingScreen apiLoaded={apiLoaded} />
 
-      {/* 2. CAPA DE INTERFAZ DE JUEGO */}
+      {/* 2. PANTALLA DE REGLAS */}
+      <RulesScreen apiLoaded={apiLoaded} />
+
+      {/* 3. CAPA DE INTERFAZ DE JUEGO */}
       <HUD />
 
       {/* 3. CAPA DE SIMULACIÓN 3D */}
@@ -31,9 +41,13 @@ export default function Experience() {
 
         <Controls />
 
-        {/* Ambientación */}
+        {/* Ambientación Cinematográfica */}
         <Stars radius={300} depth={60} count={20000} factor={7} saturation={0} fade speed={1} />
-        <ambientLight intensity={0.2} />
+        
+        {/* Luz de hemisferio: Simula el rebote de luz espacial.
+            Arriba (estrellas) tono azul muy oscuro, abajo (vacío) casi negro.
+            Esto evita que el lado oscuro de la Tierra se vea 100% negro. */}
+        <hemisphereLight skyColor="#0a1a3a" groundColor="#000000" intensity={0.4} />
 
         {/* Sistema Planetario */}
         <SunOrbit />
@@ -42,9 +56,7 @@ export default function Experience() {
 
         {/* Motor de Juego */}
         <Meteorites />
-
-        {/* Pre-calentamiento de Shaders para evitar parpadeos/tirones */}
-        <Text visible={false} position={[0, 0, 0]} text="0" />
+        <BlackHoles />
       </Canvas>
     </div>
   );

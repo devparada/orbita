@@ -3,8 +3,10 @@ import { useFrame } from "@react-three/fiber";
 import { useTexture } from "@react-three/drei";
 
 /**
- * Componente Earth
- * Renderiza el planeta Tierra con texturas de color y relieve (bump map).
+ * @component Earth
+ * @description Renderiza el planeta Tierra, actuando como el centro absoluto (0,0,0) del juego.
+ * Todo el sistema orbital de la Luna, el Sol y el cálculo central de la gravedad
+ * están diseñados en relación a la posición y escala de esta entidad.
  */
 export default function Earth() {
 	const earthRef = useRef();

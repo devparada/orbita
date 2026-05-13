@@ -13,7 +13,13 @@ export interface MeteoriteData {
  */
 export async function getMeteoritos(): Promise<MeteoriteData[]> {
 	try {
-		const response = await fetch("/api/meteoritos");
+		const timeout = new Promise<never>((_, reject) =>
+			setTimeout(() => reject(new Error("NASA API timeout")), 10000)
+		);
+		const response = await Promise.race([
+			fetch("/api/meteoritos"),
+			timeout,
+		]) as Response;
 
 		if (!response.ok) {
 			throw new Error(`Error en el Proxy: ${response.status}`);

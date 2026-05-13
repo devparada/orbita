@@ -5,7 +5,10 @@ import * as THREE from "three";
 
 /**
  * @component Meteorite
- * @description Representación individual de un meteorito con lógica de interacción.
+ * @description Entidad 3D que representa un único asteroide interactivo.
+ * Gestiona de forma aislada sus eventos de ratón (arrastrar, apuntar y soltar), 
+ * cambiando de material oscuro a luminoso cuando el jugador interactúa con él, 
+ * y pintando la línea de predicción de trayectoria.
  */
 export default function Meteorite({ state, onShoot }) {
   const meshRef = useRef();
@@ -19,10 +22,16 @@ export default function Meteorite({ state, onShoot }) {
   const setIsDraggingMeteorite = useStore(state => state.setIsDraggingMeteorite);
 
   useFrame(() => {
-    if (!state || !meshRef.current) return;
+    if (!state || !meshRef.current || !materialRef.current) return;
 
     if (state.pocketed) {
-      meshRef.current.scale.lerp(new THREE.Vector3(0, 0, 0), 0.2);
+      if (state.pocketTarget) {
+        meshRef.current.position.lerp(
+          new THREE.Vector3(state.pocketTarget.x, 0, state.pocketTarget.z),
+          0.15
+        );
+      }
+      meshRef.current.scale.lerp(new THREE.Vector3(0, 0, 0), 0.15);
       if (meshRef.current.scale.x < 0.01) meshRef.current.visible = false;
       return;
     }
@@ -30,11 +39,17 @@ export default function Meteorite({ state, onShoot }) {
     meshRef.current.position.set(state.pos.x, 0, state.pos.z);
     
     const isInteracting = hovered || state.isDragging;
-    const targetCol = isInteracting ? "#ffffff" : "#00f3ff";
-    materialRef.current.color.set(targetCol);
-    materialRef.current.emissive.set(targetCol);
-    materialRef.current.emissiveIntensity = isInteracting ? 5 : 2;
+    
+    // Aspecto rocoso realista por defecto, se ilumina al interactuar
+    materialRef.current.color.set(isInteracting ? "#ffffff" : "#aaaaaa");
+    materialRef.current.emissive.set(isInteracting ? "#00ffff" : "#333333");
+    materialRef.current.emissiveIntensity = isInteracting ? 2 : 1;
 
+    // Rotación constante para que parezcan asteroides girando en el vacío
+    meshRef.current.rotation.x += 0.005;
+    meshRef.current.rotation.y += 0.008;
+
+    // ── Línea de apuntado al arrastrar ──────────────────────────────────
     if (state.isDragging && lineRef.current) {
       lineRef.current.visible = true;
       const right = new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 0).setComponent(1, 0).normalize();
@@ -58,6 +73,7 @@ export default function Meteorite({ state, onShoot }) {
 
   return (
     <group>
+      {/* Meteorito principal */}
       <mesh ref={meshRef}
         onPointerOver={() => !state.pocketed && setHovered(true)}
         onPointerOut={() => setHovered(false)}
@@ -84,12 +100,19 @@ export default function Meteorite({ state, onShoot }) {
           }
         }}
       >
-        <sphereGeometry args={[state.visualRadius, 24, 24]} />
-        <meshStandardMaterial ref={materialRef} roughness={0.2} metalness={0.8} />
+        <dodecahedronGeometry args={[state.visualRadius * 2.2, 1]} />
+        <meshStandardMaterial 
+          ref={materialRef} 
+          roughness={0.9} 
+          metalness={0.1} 
+          flatShading 
+        />
         <mesh visible={false}>
-          <sphereGeometry args={[state.visualRadius + 3, 8, 8]} />
+          <sphereGeometry args={[state.visualRadius * 2.2 + 2, 8, 8]} />
         </mesh>
       </mesh>
+
+      {/* Línea de apuntado */}
       <line ref={lineRef}>
         <bufferGeometry />
         <lineBasicMaterial transparent opacity={0.6} linewidth={2} />

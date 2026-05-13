@@ -1,0 +1,18 @@
+{
+  "scores": {
+    "sunHit": 150,
+    "moonHit": 50,
+    "planetHit": -20,
+    "blackHoleAbsorbed": -30,
+    "comboMultiplier": 1.5
+  },
+  "speedMultiplier": 1.0,
+  "gravityMultiplier": 1.0,
+  "spawnRate": 1.0,
+  "scoreMultiplier": 1.0,
+  "blackHoles": {
+    "count": 6,
+    "pullStrength": 15,
+    "radius": 1.2
+  }
+}

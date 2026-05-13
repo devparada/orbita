@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { getMeteoritos } from "../../services/nasa";
-import { useStore } from "../../store/useStore";
+import { useStore, SCORES } from "../../store/useStore";
 import * as THREE from "three";
+import gameConfig from "../../config/gameConfig.json";
 
 // Importación de sub-componentes estructurados
 import Meteorite from "./entities/Meteorite";
@@ -11,7 +12,13 @@ import ImpactParticles from "./effects/ImpactParticles";
 
 /**
  * @component Meteorites
- * @description Motor de física y orquestador del sistema de NEOs.
+ * @description Motor de física y orquestador del enjambre de asteroides (NEOs).
+ * 
+ * Funciones clave:
+ * 1. Carga inicial de datos reales desde la NASA API.
+ * 2. Simulación física manual por sub-steps (Euler integration) para trayectorias precisas.
+ * 3. Cálculos de campos de atracción y gravedad planetarios (Sol, Tierra, Luna, Agujeros Negros).
+ * 4. Detección de colisiones masivas (Hitboxes) y disparador del sistema de puntuación.
  */
 export default function Meteorites() {
 	const meteoritos = useStore((state) => state.meteoritos);
@@ -62,7 +69,16 @@ export default function Meteorites() {
 		const bodies = physicsStates.current;
 		if (!bodies.length) return;
 
-		const { sunWorldPos, moonWorldPos } = useStore.getState();
+		const { sunWorldPos, moonWorldPos, blackHolePositions } = useStore.getState();
+		const BH_RADIUS = gameConfig.blackHoles.radius;
+		const BH_PULL = gameConfig.blackHoles.pullStrength;
+
+		// Constantes de gravedad planetaria (¡Ahora mucho más fuertes!)
+		const EARTH_GRAVITY = 3.5;   // Tierra, siempre al centro (0,0) - atracción masiva
+		const MOON_GRAVITY = 1.5;   // Luna, desvía tiros cercanos
+		const SUN_GRAVITY = 2.5;   // Sol, atracción fuerte
+		const now = performance.now() / 1000;
+
 		const dt = Math.min(delta, 0.05);
 		const subSteps = 6;
 		const sDt = dt / subSteps;
@@ -76,6 +92,21 @@ export default function Meteorites() {
 
 				b.pos.x += b.vel.x * sDt * 60;
 				b.pos.z += b.vel.z * sDt * 60;
+
+				// ── Gravedad planetaria: curva las trayectorias ──
+				const applyGravity = (cx, cz, strength) => {
+					const gx = cx - b.pos.x;
+					const gz = cz - b.pos.z;
+					const gDist = Math.sqrt(gx * gx + gz * gz);
+					if (gDist < 3) return; // evitar singularidad
+					const force = strength / Math.max(gDist * gDist * 0.012, 1);
+					b.vel.x += (gx / gDist) * force * sDt;
+					b.vel.z += (gz / gDist) * force * sDt;
+				};
+
+				applyGravity(0, 0, EARTH_GRAVITY);                        // Tierra
+				applyGravity(moonWorldPos.x, moonWorldPos.z, MOON_GRAVITY); // Luna
+				applyGravity(sunWorldPos.x, sunWorldPos.z, SUN_GRAVITY);   // Sol
 
 				if (Math.abs(b.pos.x) > BOUNDARY) {
 					b.vel.x *= -0.7;
@@ -100,13 +131,13 @@ export default function Meteorites() {
 				if (!b1 || b1.pocketed) return;
 
 				const targets = [
-					{ x: 0, z: 0, r: 16, pk: 16, pts: 100, c: "#4444ff" },
+					{ x: 0, z: 0, r: 16, pk: 16, pts: SCORES.planetHit, c: "#4444ff" },
 					{
 						x: moonWorldPos.x,
 						z: moonWorldPos.z,
 						r: 8,
 						pk: 8,
-						pts: 500,
+						pts: SCORES.moonHit,
 						c: "#ffffff",
 					},
 					{
@@ -114,7 +145,7 @@ export default function Meteorites() {
 						z: sunWorldPos.z,
 						r: 12,
 						pk: 12,
-						pts: 50,
+						pts: SCORES.sunHit,
 						c: "#ffff00",
 					},
 				];
@@ -126,6 +157,7 @@ export default function Meteorites() {
 
 					if (d < b1.radius + t.pk) {
 						b1.pocketed = true;
+						b1.pocketTarget = { x: t.x, z: t.z };
 						useStore.getState().addScore(t.pts);
 						setParticles((p) => [
 							...p.slice(-5),
@@ -165,6 +197,35 @@ export default function Meteorites() {
 						}
 					}
 				});
+
+				// BLACK HOLES LOGIC: solo absorbe si el meteorito está en movimiento
+				if (!b1.pocketed && b1.isEscaping && blackHolePositions && blackHolePositions.length > 0) {
+					blackHolePositions.forEach((bhp) => {
+						const dx = b1.pos.x - bhp.x;
+						const dz = b1.pos.z - bhp.z;
+						const dSq = dx * dx + dz * dz;
+						const d = Math.sqrt(dSq);
+
+						if (d < b1.radius + BH_RADIUS * 0.8) {
+							b1.pocketed = true;
+							b1.pocketTarget = { x: bhp.x, z: bhp.z };
+							useStore.getState().addScore(SCORES.blackHoleAbsorbed);
+							setParticles((p) => [
+								...p.slice(-5),
+								{ id: Math.random(), pos: new THREE.Vector3(b1.pos.x, 0, b1.pos.z), color: "#9933ff" },
+							]);
+							setLabels((l) => [
+								...l.slice(-5),
+								{ id: Math.random(), pos: { x: b1.pos.x, z: b1.pos.z }, text: `${SCORES.blackHoleAbsorbed}` },
+							]);
+						} else if (d < 150) {
+							// Atracción gravitatoria solo si está en movimiento
+							const force = BH_PULL / Math.max(dSq, 10);
+							b1.vel.x -= (dx / d) * force * sDt * 60;
+							b1.vel.z -= (dz / d) * force * sDt * 60;
+						}
+					});
+				}
 
 				if (b1.pocketed) return;
 
@@ -244,6 +305,9 @@ export default function Meteorites() {
 			{labels.map((l) => (
 				<ScoreLabel key={l.id} position={l.pos} text={l.text} />
 			))}
+			{/* ── Pre-calentamiento de shaders para evitar parpadeo inicial ── */}
+			<ScoreLabel key="dummy-label" position={{ x: 0, z: 0 }} text=" " />
+			<ImpactParticles key="dummy-particles" position={{ x: 0, z: 0 }} color="#000000" />
 		</group>
 	);
 }
