@@ -11,22 +11,22 @@
     "preview": "astro preview"
   },
   "dependencies": {
-    "@astrojs/react": "5.0.7",
-    "@astrojs/sitemap": "3.7.3",
-    "@astrojs/vercel": "10.0.8",
-    "@react-three/drei": "10.7.7",
-    "@react-three/fiber": "9.6.1",
-    "astro": "6.4.8",
-    "react": "19.2.7",
-    "react-dom": "19.2.7",
-    "three": "0.184.0",
-    "zustand": "5.0.14"
+    "@astrojs/react": "6.0.5",
+    "@astrojs/sitemap": "3.7.4",
+    "@astrojs/vercel": "11.0.10",
+    "@react-three/drei": "10.7.8",
+    "@react-three/fiber": "9.7.0",
+    "astro": "7.3.1",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "three": "0.185.1",
+    "zustand": "5.0.15"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.0",
-    "@types/react": "19.2.17",
-    "@types/react-dom": "19.2.3",
-    "@types/three": "0.184.1"
+    "@biomejs/biome": "2.5.12",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.7",
+    "@types/three": "0.185.4"
   },
   "engines": {
     "node": ">=22.12.0"
